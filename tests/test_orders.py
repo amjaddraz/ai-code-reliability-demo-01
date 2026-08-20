@@ -37,6 +37,32 @@ def test_stock_decreases_after_order(client: TestClient, product: dict[str, obje
     assert product_response.json()["stock"] == 6
 
 
+def test_repeated_client_request_does_not_create_duplicate_order(
+    client: TestClient,
+    product: dict[str, object],
+) -> None:
+    payload = {
+        "client_request_id": "request-retry-001",
+        "product_id": product["id"],
+        "quantity": 2,
+    }
+
+    first_response = client.post("/orders", json=payload)
+    second_response = client.post("/orders", json=payload)
+
+    assert first_response.status_code == 201
+    assert second_response.status_code == 201
+    assert second_response.json()["id"] == first_response.json()["id"]
+
+    orders_response = client.get("/orders")
+    product_response = client.get(f"/products/{product['id']}")
+
+    assert orders_response.status_code == 200
+    assert len(orders_response.json()) == 1
+    assert product_response.status_code == 200
+    assert product_response.json()["stock"] == 8
+
+
 def test_insufficient_stock_is_rejected(
     client: TestClient,
     product: dict[str, object],

@@ -1,0 +1,36 @@
+Retry reproduction
+==================
+
+Inputs
+------
+- Isolated TestClient with the existing in-memory SQLite setup.
+- Product: id 1, initial stock 10.
+- Payload submitted twice sequentially:
+  {"client_request_id": "retry-request-001", "product_id": 1, "quantity": 2}
+
+Observed behavior
+-----------------
+- First response: 201, {"id": 1, "client_request_id": "retry-request-001", "product_id": 1, "quantity": 2}
+- Second response: 201, {"id": 1, "client_request_id": "retry-request-001", "product_id": 1, "quantity": 2}
+- Persisted orders: 2 (order IDs 1 and 2, both with the same client_request_id).
+- Final product stock: 6.
+
+Expected behavior
+-----------------
+- Both requests resolve to the original order ID.
+- Exactly 1 order persists.
+- Inventory is reduced once, leaving stock 8.
+
+Focused regression test
+-----------------------
+Command:
+PYTHONDONTWRITEBYTECODE=1 pytest -p no:cacheprovider tests/test_orders.py::test_repeated_client_request_does_not_create_duplicate_order
+
+Exact result summary:
+FAILED tests/test_orders.py::test_repeated_client_request_does_not_create_duplicate_order
+AssertionError: assert 2 == 1
+1 failed, 1 warning in 0.05s
+
+The failure occurred at the assertion requiring exactly one persisted order;
+the response contained two orders with the repeated client_request_id. The
+independent reproduction also observed final stock 6 rather than 8.
