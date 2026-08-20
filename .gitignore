@@ -1,0 +1,23 @@
+.venv/
+venv/
+env/
+
+__pycache__/
+*.py[cod]
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+*.db
+*.sqlite
+*.sqlite3
+
+.DS_Store
+._*
+
+# Local Codex configuration
+.codex/
+
+# Python packaging artifacts
+*.egg-info/
