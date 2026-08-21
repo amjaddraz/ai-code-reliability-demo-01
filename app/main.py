@@ -18,6 +18,7 @@ from app.schemas import (
     ProductRead,
 )
 from app.services.orders import (
+    IdempotencyConflictError,
     InsufficientStockError,
     ProductNotFoundError,
     create_order,
@@ -86,6 +87,11 @@ def post_order(payload: OrderCreate, session: Session = Depends(get_db)) -> Orde
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Insufficient stock",
+        ) from exc
+    except IdempotencyConflictError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="client_request_id already used with different order data",
         ) from exc
 
 

@@ -15,8 +15,26 @@ class InsufficientStockError(Exception):
     """Raised when a product cannot fulfill an order."""
 
 
+class IdempotencyConflictError(Exception):
+    """Raised when a request ID is reused with different order data."""
+
+
 def create_order(session: Session, request: OrderCreate) -> Order:
     """Create an order and reserve its inventory in one transaction."""
+
+    existing_order = session.scalar(
+        select(Order)
+        .where(Order.client_request_id == request.client_request_id)
+        .order_by(Order.id)
+        .limit(1)
+    )
+    if existing_order is not None:
+        if (
+            existing_order.product_id != request.product_id
+            or existing_order.quantity != request.quantity
+        ):
+            raise IdempotencyConflictError
+        return existing_order
 
     product = session.get(Product, request.product_id)
     if product is None:
@@ -33,22 +51,7 @@ def create_order(session: Session, request: OrderCreate) -> Order:
     )
     session.add(order)
     session.flush()
-
-    prior_order = session.scalar(
-        select(Order)
-        .where(
-            Order.client_request_id == request.client_request_id,
-            Order.id != order.id,
-        )
-        .order_by(Order.id)
-        .limit(1)
-    )
-
     session.commit()
-
-    if prior_order is not None:
-        session.refresh(prior_order)
-        return prior_order
 
     session.refresh(order)
     return order
