@@ -16,6 +16,13 @@ test, root-cause analysis, and verified correction.
 The project intentionally excludes authentication, payments, deployment,
 frontend concerns, and external services.
 
+## Case study
+
+See [CASE_STUDY.md](CASE_STUDY.md) for the reproduced regression, root-cause
+analysis, minimal correction, and verification evidence. The Git tags
+`demo-broken-state` and `demo-tested-fix` provide inspectable before-and-after
+milestones.
+
 ## Local setup
 
 Requires Python 3.11 or newer.
