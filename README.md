@@ -1,9 +1,9 @@
 # Order Reliability Demonstration
 
 This is a **Demonstration Project**: a deliberately small FastAPI backend built
-for a scoped software-reliability case study. It provides products, inventory,
-and order creation while leaving room for a later investigation, regression
-test, root-cause analysis, and verified correction.
+as a scoped software-reliability case study. It provides products, inventory,
+and order creation while documenting bug reproduction, root-cause analysis,
+regression testing, and a verified correction.
 
 ## Scope
 
@@ -39,7 +39,7 @@ Run the API:
 uvicorn app.main:app --reload
 ```
 
-Run the baseline tests:
+Run the test suite:
 
 ```bash
 pytest
